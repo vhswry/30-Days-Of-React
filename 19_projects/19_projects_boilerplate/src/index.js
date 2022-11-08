@@ -1,84 +1,68 @@
 import React, { Component } from 'react'
-import ReactDOM from 'react-dom'
 import axios from 'axios'
+import ReactDOM from 'react-dom/client'
+import styled from 'styled-components'
 
-const Country = ({
-  country: { name, capital, flag, languages, population, currency },
-}) => {
-  const formatedCapital =
-    capital.length > 0 ? (
-      <>
-        <span>Capital: </span>
-        {capital}
-      </>
-    ) : (
-      ''
-    )
-  const formatLanguage = languages.length > 1 ? `Languages` : `Language`
-  console.log(languages)
-  return (
-    <div className='country'>
-      <div className='country_flag'>
-        <img src={flag} alt={name} />
-      </div>
-      <h3 className='country_name'>{name.toUpperCase()}</h3>
-      <div class='country_text'>
-        <p>{formatedCapital}</p>
-        <p>
-          <span>{formatLanguage}: </span>
-          {languages.map((language) => language.name).join(', ')}
-        </p>
-        <p>
-          <span>Population: </span>
-          {population.toLocaleString()}
-        </p>
-        <p>
-          <span>Currency: </span>
-          {currency}
-        </p>
-      </div>
-    </div>
-  )
-}
 
+const Image = styled.img`
+  width: 100%;
+  height: auto;
+`
 class App extends Component {
-  state = {
-    data: [],
+  constructor(props) {
+    super(props)
+    this.state = {
+      data: [],
+    }
   }
 
   componentDidMount() {
-    this.fetchCountryData()
-  }
-  fetchCountryData = async () => {
-    const url = 'https://restcountries.eu/rest/v2/all'
-    try {
-      const response = await axios.get(url)
-      const data = await response.data
-      this.setState({
-        data,
+    const API_URL = 'https://api.thecatapi.com/v1/images/search?breed_id=abys'
+    axios
+      .get(API_URL)
+      .then((response) => {
+        this.setState({
+          data: response.data,
+        })
       })
-    } catch (error) {
-      console.log(error)
+      .catch((error) => {
+        console.log(error)
+      })
+
+  }
+  static getDerivedStateFromProps(props, state) {
+    return { firstName: props.firstName }
+  }
+  shouldComponentUpdate(nextProps, nextState) {
+    console.log(nextProps, nextState)
+    console.log(nextState.day)
+    if (nextState.day > 31) {
+      return false
+    } else {
+      return true
     }
+  }
+
+  doChallenge = () => {
+    this.setState({
+      day: this.state.day + 1,
+    })
+  }
+  renderCats = () => {
+    return this.state.data.map(({ id, url}) => {
+      return (
+        <div key={id}>
+          <Image src={url}></Image>
+        </div>
+      )
+    })
   }
 
   render() {
     return (
-      <div className='App'>
-        <h1>React Component Life Cycle</h1>
-        <h1>Calling API</h1>
-        <div>
-          <p>There are {this.state.data.length} countries in the api</p>
-          <div className='countries-wrapper'>
-            {this.state.data.map((country) => (
-              <Country country={country} />
-            ))}
-          </div>
-        </div>
-      </div>
-    )
+      <div className='App'>{this.renderCats()}</div>
+      )
   }
 }
 
-const rootElement = document.getElementById('root')
-ReactDOM.render(<App />, rootElement)
+ReactDOM.createRoot(document.getElementById('root')).render(<App />)
